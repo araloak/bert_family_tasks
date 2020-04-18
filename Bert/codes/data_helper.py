@@ -5,6 +5,15 @@ import re
 from langconv import *#繁体字转化为简体字
 from keras_bert import load_trained_model_from_checkpoint, Tokenizer, extract_embeddings
 
+def Traditional2Simplified(sentence):
+    '''
+    将sentence中的繁体字转为简体字
+    :param sentence: 待转换的句子
+    :return: 将句子中繁体字转换为简体字之后的句子
+    '''
+    sentence = Converter('zh-hans').convert(sentence)
+    return sentence
+
 
 def get_finetune_data(data_path):
     raw_data=open(data_path,encoding='utf8').read().split('\n')
@@ -42,11 +51,7 @@ def clean(text):#数据预处理
     cleaned_text = []
     #数据清理
     for string in text:
-        #print("之前:",string)
-        try:
-            string = Traditional2Simplified(string)
-        except:
-            pass
+        string = Traditional2Simplified(string)
         #string = re.sub("\?展开全文c","......",string)
         #string = re.sub("？[？]+","??",string)
         #string = re.sub("\?[\?]+","??",string)
