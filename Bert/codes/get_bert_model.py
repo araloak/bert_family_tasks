@@ -46,7 +46,7 @@ def f1(y_true, y_pred):
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
 
 def build_bert(args):
-    bert_model = load_trained_model_from_checkpoint(args.config_path, args.checkpoint_path, seq_len=None)  # 加载预训练模型
+    bert_model = load_trained_model_from_checkpoint(args.config_path, args.checkpoint_path, seq_len=None,use_adapter=True)  # 加载预训练模型
 
     for l in bert_model.layers:
         #if "-12-" in l.name or "-11-" in l.name or "-10-" in l.name:
