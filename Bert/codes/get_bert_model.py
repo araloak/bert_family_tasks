@@ -56,6 +56,12 @@ def build_bert(args):
     x2_in = Input(shape=(None,))
 
     x = bert_model([x1_in, x2_in])
+    
+    a1 = bert_model.get_layer(name='Encoder-{}-FeedForward-Norm'.format(12))(x)#获取最后一层输出
+    a2 = bert_model.get_layer(name='Encoder-{}-FeedForward-Norm'.format(11))(x)#获取倒数第二层输出
+    
+    x = Add()([a1, a2])
+    
     x = Lambda(lambda x: x[:, 0])(x) # 取出[CLS]对应的向量用来做分类
     
     p = Dense(args.nclass, activation='softmax')(x)
