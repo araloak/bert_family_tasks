@@ -53,11 +53,17 @@ if os.path.exists(args.sub_path)==False:
     os.mkdir(args.sub_path, mode=0o777)
 if os.path.exists(args.finetuned_path)==False:
     os.mkdir(args.finetuned_path, mode=0o777)
-
-class Metrics(Callback):
-    def __init__(self, valid_data):
+def report(true,pred):
+    target_names = ['Space', 'Energy', 'Electronics','Communication','Computer','Mine','Transport','Art','Enviornment','Agriculture','Economy','Law','Medical','Military','Politics','Sports','Literature','Education','Philosophy','History']
+    try:
+        print(classification_report(true, pred, target_names=target_names))
+    except:
+        print("出现异常")
+class Metrics(Callback):#自定义回调函数，在每个epoch结束后进行validate和predict
+    def __init__(self, valid_data,test_data):
         super(Metrics, self).__init__()
         self.validation_data = valid_data
+        self.test_data = test_data
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
@@ -65,16 +71,30 @@ class Metrics(Callback):
         val_targ = self.validation_data[2]
         if len(val_targ.shape) == 2 and val_targ.shape[1] != 1:
             val_targ = np.argmax(val_targ, -1)
-
+        report(val_targ,val_predict)
         _val_f1 = f1_score(val_targ, val_predict, average='macro')
         _val_recall = recall_score(val_targ, val_predict, average='macro')
         _val_precision = precision_score(val_targ, val_predict, average='macro')
 
+        test_predict = np.argmax(self.model.predict([self.test_data[0],self.test_data[1]],verbose=1), -1)
+        test_targ = self.test_data[2]
+        if len(test_targ.shape) == 2 and test_targ.shape[1] != 1:
+            test_targ = np.argmax(test_targ, -1)
+        report(test_targ,test_predict)
+        _test_f1 = f1_score(test_targ, test_predict, average='macro')
+        _test_recall = recall_score(test_targ, test_predict, average='macro')
+        _test_precision = precision_score(test_targ, test_predict, average='macro')
+
         logs['val_f1'] = _val_f1
         logs['val_recall'] = _val_recall
         logs['val_precision'] = _val_precision
+        logs['test_f1'] = _test_f1
+        logs['test_recall'] = _test_recall
+        logs['test_precision'] = _test_precision
         print(" — val_f1: %f — val_precision: %f — val_recall: %f" % (_val_f1, _val_precision, _val_recall))
+        print(" — test_f1: %f — test_precision: %f — test_recall: %f" % (_test_f1, _test_precision, _test_recall))
         return
+
 #只有bert/roberta支持继续的pertrain
 def pretrain():
     sentence_pairs = get_pretrain_data(args)
@@ -121,22 +141,25 @@ def train():
     data,label = get_finetune_data(args.train_path) #data是由所有句子组成的一级列表["你是人","你不是人"]
 
     print(label[0:10],data[0:10])
-    x_train,x_test, y_train, y_test =train_test_split(data,label,test_size=args.dev_size, random_state=2020)
+    x_train,x_val, y_train, y_val =train_test_split(data,label,test_size=args.dev_size, random_state=2020)
 
     x1_train,x2_train=get_bert_input(x_train,args.vocab_path,args.maxlen)#x1、x2
-    x1_test,x2_test=get_bert_input(x_test,args.vocab_path,args.maxlen)#x1、x2
+    x1_val,x2_val=get_bert_input(x_val,args.vocab_path,args.maxlen)#x1、x2
+
+    test_data,test_label = get_finetune_data(args.test_path)
+    x1_test,x2_test=get_bert_input(test_data,args.vocab_path,args.maxlen)
 
 
 
     checkpoint = ModelCheckpoint('../models/'+str(args.times)+'/weights.{epoch:03d}-{val_f1:.4f}.h5', monitor='val_f1', verbose=1, save_best_only=True, mode='auto')
     early_stopping = EarlyStopping(monitor='val_f1', min_delta=0, patience=1, verbose=1)
-    metrics = Metrics(valid_data=[[np.array(x1_test),np.array(x2_test)], np.array(y_test)])
+    metrics = Metrics(valid_data=[np.array(x1_val),np.array(x2_val), np.array(y_val)],test_data = [np.array(x1_test),np.array(x2_test), np.array(test_label)] )
     model.fit([np.array(x1_train),np.array(x2_train)], np.array(y_train),
              batch_size=args.batch_size,
              epochs=args.epoch,
              verbose=1,
              callbacks=[checkpoint,early_stopping,metrics],
-             validation_data=[[np.array(x1_test),np.array(x2_test)], np.array(y_test)]
+             validation_data=[[np.array(x1_val),np.array(x2_val)], np.array(y_val)]
              )
     model.save("../models/"+str(args.times)+"/trained.h5")
 
@@ -152,21 +175,24 @@ def keep_train():
     data,label = get_finetune_data(args.train_path) #data是由所有句子组成的一级列表["你是人","你不是人"]
 
     print(label[0:10],data[0:10])
-    x_train,x_test, y_train, y_test =train_test_split(data,label,test_size=args.dev_size, random_state=2020)
+    x_train,x_val, y_train, y_val =train_test_split(data,label,test_size=args.dev_size, random_state=2020)
 
     x1_train,x2_train=get_bert_input(x_train,args.vocab_path,args.maxlen)#x1、x2
-    x1_test,x2_test=get_bert_input(x_test,args.vocab_path,args.maxlen)#x1、x2
+    x1_val,x2_val=get_bert_input(x_val,args.vocab_path,args.maxlen)#x1、x2
 
+    test_data,test_label = get_finetune_data(args.test_path)
+    x1_test,x2_test=get_bert_input(test_data,args.vocab_path,args.maxlen)
+    
     checkpoint = ModelCheckpoint('../models/'+str(args.times)+'/keep_train_weights.{epoch:03d}-{val_f1:.4f}.h5', monitor='val_f1', verbose=1, save_best_only=True, mode='auto')
     early_stopping = EarlyStopping(monitor='val_f1', min_delta=0, patience=1, verbose=1)
-    metrics = Metrics(valid_data=[[np.array(x1_test),np.array(x2_test)], np.array(y_test)])    
+    metrics = Metrics(valid_data=[np.array(x1_val),np.array(x2_val), np.array(y_val)],test_data = [np.array(x1_test),np.array(x2_test), np.array(test_label)] )
     
     model.fit([np.array(x1_train),np.array(x2_train)], np.array(y_train),
              batch_size=args.batch_size,
              epochs=args.epoch,
              verbose=1,
              callbacks=[early_stopping,metrics,checkpoint],
-             validation_data=[[np.array(x1_test),np.array(x2_test)], np.array(y_test)]
+             validation_data=[[np.array(x1_val),np.array(x2_val)], np.array(y_val)]
              )
     model.save("../models/"+str(args.times)+"/keep_trained.h5")
 def predict():
