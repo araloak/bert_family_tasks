@@ -71,7 +71,13 @@ class Metrics(Callback):#自定义回调函数，在每个epoch结束后进行va
         val_targ = self.validation_data[2]
         if len(val_targ.shape) == 2 and val_targ.shape[1] != 1:
             val_targ = np.argmax(val_targ, -1)
+        print("验证集性能report")
         report(val_targ,val_predict)
+        logs['val_f1'] = _val_f1
+        logs['val_recall'] = _val_recall
+        logs['val_precision'] = _val_precision
+        print(" — val_f1: %f — val_precision: %f — val_recall: %f" % (_val_f1, _val_precision, _val_recall))
+        
         _val_f1 = f1_score(val_targ, val_predict, average='macro')
         _val_recall = recall_score(val_targ, val_predict, average='macro')
         _val_precision = precision_score(val_targ, val_predict, average='macro')
@@ -80,18 +86,16 @@ class Metrics(Callback):#自定义回调函数，在每个epoch结束后进行va
         test_targ = self.test_data[2]
         if len(test_targ.shape) == 2 and test_targ.shape[1] != 1:
             test_targ = np.argmax(test_targ, -1)
+        print("测试集性能report")
         report(test_targ,test_predict)
         _test_f1 = f1_score(test_targ, test_predict, average='macro')
         _test_recall = recall_score(test_targ, test_predict, average='macro')
         _test_precision = precision_score(test_targ, test_predict, average='macro')
 
-        logs['val_f1'] = _val_f1
-        logs['val_recall'] = _val_recall
-        logs['val_precision'] = _val_precision
         logs['test_f1'] = _test_f1
         logs['test_recall'] = _test_recall
         logs['test_precision'] = _test_precision
-        print(" — val_f1: %f — val_precision: %f — val_recall: %f" % (_val_f1, _val_precision, _val_recall))
+        
         print(" — test_f1: %f — test_precision: %f — test_recall: %f" % (_test_f1, _test_precision, _test_recall))
         return
 
