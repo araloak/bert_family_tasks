@@ -1,4 +1,4 @@
-# bert_family_classification
+# bert_family_tasks
 支持Roberta、albert、bert以及转化为tf版本的ernie等bert大家族所有预训练模型的加载、完成cls、ner、mrc三种经典任务（部分predict代码需要自行调整，train没有大问题）。
 
 支持分段设置学习率，提高模型表现。
