@@ -2,18 +2,26 @@ import pandas as pd
 import codecs
 import re
 
-from langconv import *#繁体字转化为简体字
 from keras_bert import load_trained_model_from_checkpoint, Tokenizer, extract_embeddings
 from keras.preprocessing import sequence
 
-def Traditional2Simplified(sentence):
-    '''
-    将sentence中的繁体字转为简体字
-    :param sentence: 待转换的句子
-    :return: 将句子中繁体字转换为简体字之后的句子
-    '''
-    sentence = Converter('zh-hans').convert(sentence)
-    return sentence
+def Chinese_Traditional_Simple_converter(str_lis, mode='t2s', return_generator=True):
+    """
+    中文繁简转换，基于iNLP库
+    :param str_lis:list 中文字符串列表，每个字符串表示一篇文章或一个词
+    :param mode:str 转换模式 t2s，s2t，默认t2s
+    :param return_generator:bool True 返回序列生成器，False返回列表
+    :return: seq：generator，list将中文字符串转换为整数列表的生成器或列表，return_generator决定其返回类型
+    """
+    from inlp.convert import chinese
+    mode2convert = {
+        't2s': chinese.t2s,
+        's2t': chinese.s2t,
+    }
+    converter = mode2convert.get(mode.lower(), chinese.t2s)
+    seq_gen = (converter(s) for s in str_lis)
+    seq = seq_gen if return_generator else list(seq_gen)
+    return seq
 
 def get_cls_data(data_path):
     raw_data=open(data_path,encoding='utf8').read().split('\n')
