@@ -3,13 +3,13 @@ BERT family tasks
 ![](https://img.shields.io/badge/keras-tf.keras-blue.svg)
 [[中文]](https://github.com/stupidHIGH/bert_family_classification/blob/master/README.zh-CN.md)
 
-Demos of multiple NLP task pipelines.
+- Demos of multiple NLP task pipelines.
 
-Implementations are Based on [keras_bert](#https://github.com/CyberZHG/keras-bert).
+- Implementations are Based on [keras_bert](#https://github.com/CyberZHG/keras-bert).
 
-Support various Transformer-Encoder style pre-trained models. 
+- Support various Transformer-Encoder style pre-trained models. 
 
-In each run, models, data and log files are stored seperately to support massive repeatation of training.
+- In each run, models, data and log files are stored seperately to support massive repeatation of training.
 
 ****
 # Features
