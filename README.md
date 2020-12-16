@@ -1,7 +1,7 @@
 BERT family tasks
 ===========================
 ![](https://img.shields.io/badge/keras-tf.keras-blue.svg)
-[[中文]](https://github.com/stupidHIGH/bert_family_classification/blob/master/README.zh-CN.md)
+[[中文]](./README.zh-CN.md)
 
 - Demos of multiple NLP task pipelines.
 
