@@ -1,6 +1,6 @@
 BERT family tasks
 ===========================
-[英文](https://github.com/stupidHIGH/bert_family_classification/blob/master/README.md)
+[[English]](https://github.com/stupidHIGH/bert_family_classification/blob/master/README.md)
 
 多种NLP任务流水线的例子，为高阶更灵活的预训练模型使用提供一定接口，适合BERT新手进行上手练习。
 
