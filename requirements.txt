@@ -11,7 +11,7 @@ keras-position-wise-feed-forward==0.6.0
 Keras-Preprocessing==1.1.0
 keras-self-attention==0.46.0
 keras-transformer==0.31.0
-numpy==1.19.1
+numpy==1.22.0
 pandas==1.1.0
 tensorflow-gpu==2.0.0
 tensorflow-gpu-estimator==2.1.0
